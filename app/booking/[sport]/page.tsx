@@ -1,6 +1,10 @@
 import BookingSchedule from "@/components/BookingSchedule";
 import { SPORT_LIST } from "@/lib/mockData";
 
+export function generateStaticParams() {
+  return SPORT_LIST.map((sport) => ({ sport: sport.slug }));
+}
+
 export default async function BookingSportPage({ params }: { params: Promise<{ sport: string }> }) {
   const { sport: sportSlug } = await params;
 
