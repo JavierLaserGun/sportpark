@@ -4,14 +4,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircleIcon, CloseIcon } from "@/components/Icons";
-import { formatDateLong, SPORT_LIST } from "@/lib/mockData";
+import { formatDateLong } from "@/lib/mockData";
 import { useBooking } from "@/lib/bookingContext";
 
 type PaymentMethod = "visa" | "credit";
-
-export function generateStaticParams() {
-  return SPORT_LIST.map((sport) => ({ sport: sport.slug }));
-}
 
 export default function CheckoutDetailsPage() {
   const router = useRouter();
