@@ -6,6 +6,7 @@ export const SPORT_LIST: Sport[] = [
     slug: "pickleball",
     shortDescription: "Fast-paced racquet sport played on a smaller court",
     pricePerHour: 25,
+    courtsCount: 4,
     image: "pickleball",
   },
   {
@@ -13,6 +14,7 @@ export const SPORT_LIST: Sport[] = [
     slug: "futsal",
     shortDescription: "Indoor soccer played on a smaller field with 5 players per side",
     pricePerHour: 60,
+    courtsCount: 1,
     image: "futsal",
   },
 ];
@@ -48,12 +50,12 @@ export function formatDateLong(iso: string): string {
   });
 }
 
-export function formatDateShort(iso: string): string {
+export function formatDateShort(iso: string): { weekday: string; day: string; month: string } {
   const date = new Date(`${iso}T00:00:00Z`);
-  return date.toLocaleDateString("en-US", {
-    month: "numeric",
-    day: "numeric",
-  });
+  const weekday = date.toLocaleDateString("en-US", { weekday: "short" });
+  const day = date.toLocaleDateString("en-US", { day: "numeric" });
+  const month = date.toLocaleDateString("en-US", { month: "numeric" });
+  return { weekday, day, month };
 }
 
 export function addDays(iso: string, days: number): string {

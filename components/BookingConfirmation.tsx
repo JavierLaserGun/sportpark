@@ -6,6 +6,8 @@ import { CheckCircleIcon } from "./Icons";
 import { formatDateLong, SPORT_LIST } from "@/lib/mockData";
 import { useBooking } from "@/lib/bookingContext";
 
+const sportMap = Object.fromEntries(SPORT_LIST.map(s => [s.slug, s]));
+
 export default function BookingConfirmation() {
   const searchParams = useSearchParams();
   const ref = searchParams.get("ref");
@@ -33,7 +35,7 @@ export default function BookingConfirmation() {
     );
   }
 
-  const sport = SPORT_LIST[booking.sport];
+  const sport = sportMap[booking.sport];
 
   return (
     <div className="container-px mx-auto max-w-[760px] py-14 lg:py-20">

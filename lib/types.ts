@@ -1,8 +1,11 @@
+export type SportSlug = "pickleball" | "futsal";
+
 export interface Sport {
   name: string;
-  slug: string;
+  slug: SportSlug;
   shortDescription: string;
   pricePerHour: number;
+  courtsCount: number;
   image: "pickleball" | "futsal";
 }
 
@@ -42,6 +45,8 @@ export interface CustomerInfo {
   fullName: string;
   email: string;
   phone: string;
+  mobile?: string;
+  remarks?: string;
   notes?: string;
 }
 
