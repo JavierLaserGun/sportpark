@@ -32,7 +32,7 @@ export default function BookingForm({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate()) return;
-    onSubmit({ fullName: fullName.trim(), mobile: mobile.trim(), email: email.trim(), remarks: remarks.trim() || undefined });
+    onSubmit({ fullName: fullName.trim(), phone: mobile.trim(), email: email.trim(), remarks: remarks.trim() || undefined });
   }
 
   return (
