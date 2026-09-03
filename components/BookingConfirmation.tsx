@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { CheckCircleIcon } from "./Icons";
-import { formatDateLong, SPORTS } from "@/lib/mockData";
+import { formatDateLong, SPORT_LIST } from "@/lib/mockData";
 import { useBooking } from "@/lib/bookingContext";
 
 export default function BookingConfirmation() {
@@ -33,7 +33,7 @@ export default function BookingConfirmation() {
     );
   }
 
-  const sport = SPORTS[booking.sport];
+  const sport = SPORT_LIST[booking.sport];
 
   return (
     <div className="container-px mx-auto max-w-[760px] py-14 lg:py-20">
