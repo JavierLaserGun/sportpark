@@ -19,9 +19,10 @@ const NAV_LINKS = [
 export default function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const { account, hydrated } = useBooking();
+  const { account, hydrated, logout } = useBooking();
   const { admin: adminUser, hydrated: adminHydrated } = useAdmin();
   const loggedIn = hydrated && !!account;
+  const firstName = account?.fullName.trim().split(/\s+/)[0] || "";
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur">
@@ -53,13 +54,32 @@ export default function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <Link
-            href={loggedIn ? "/account" : "/login"}
-            className="flex items-center gap-2 rounded-md border border-brand px-4 py-2 text-sm text-brand transition-colors hover:bg-brand hover:text-white"
-          >
-            <UserGlyph />
-            {loggedIn ? "_MY ACCOUNT" : "_LOGIN"}
-          </Link>
+          {loggedIn ? (
+            <>
+              <Link
+                href="/account"
+                className="flex items-center gap-2 rounded-md border border-brand px-4 py-2 text-sm text-brand transition-colors hover:bg-brand hover:text-white"
+              >
+                <UserGlyph />
+                Hello, {firstName}
+              </Link>
+              <button
+                type="button"
+                onClick={logout}
+                className="rounded-md border border-border px-4 py-2 text-sm text-foreground/80 transition-colors hover:border-brand hover:text-brand"
+              >
+                _LOG OUT
+              </button>
+            </>
+          ) : (
+            <Link
+              href="/login"
+              className="flex items-center gap-2 rounded-md border border-brand px-4 py-2 text-sm text-brand transition-colors hover:bg-brand hover:text-white"
+            >
+              <UserGlyph />
+              _LOGIN
+            </Link>
+          )}
         </div>
 
         <button
@@ -90,13 +110,35 @@ export default function Navbar() {
                 </Link>
               );
             })}
-            <Link
-              href={loggedIn ? "/account" : "/login"}
-              onClick={() => setOpen(false)}
-              className="mt-2 rounded-md border border-brand px-3 py-2.5 text-center text-sm text-brand"
-            >
-              {loggedIn ? "_MY ACCOUNT" : "_LOGIN"}
-            </Link>
+            {loggedIn ? (
+              <>
+                <Link
+                  href="/account"
+                  onClick={() => setOpen(false)}
+                  className="mt-2 rounded-md border border-brand px-3 py-2.5 text-center text-sm text-brand"
+                >
+                  Hello, {firstName}
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout();
+                    setOpen(false);
+                  }}
+                  className="mt-2 rounded-md border border-border px-3 py-2.5 text-center text-sm text-foreground/80"
+                >
+                  _LOG OUT
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                onClick={() => setOpen(false)}
+                className="mt-2 rounded-md border border-brand px-3 py-2.5 text-center text-sm text-brand"
+              >
+                _LOGIN
+              </Link>
+            )}
           </nav>
         </div>
       )}
