@@ -125,6 +125,13 @@ export default function LoginPage() {
               </button>
             </form>
 
+            <Link
+              href="/signup"
+              className="mt-3 block w-full rounded-md border border-border py-3 text-center text-sm font-semibold text-foreground transition-colors hover:border-brand hover:text-brand"
+            >
+              CREATE ACCOUNT
+            </Link>
+
             <p className="mt-6 text-center text-xs text-muted">
               Looking to book a court instead?{" "}
               <Link href="/booking" className="text-brand">
