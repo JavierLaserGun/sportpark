@@ -248,10 +248,6 @@ export default function AccountPage() {
                     <p>Booking Date: {new Date(booking.createdAt).toLocaleDateString()}</p>
                     <p>Currency: {booking.currency}</p>
                   </div>
-
-                  <button className="mt-4 w-full rounded-md border border-border px-4 py-2 text-sm font-semibold transition-colors hover:bg-background-hover">
-                    📥 DOWNLOAD RECEIPT
-                  </button>
                 </div>
               ))
           )}
