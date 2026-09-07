@@ -50,11 +50,13 @@ export function formatDateLong(iso: string): string {
   });
 }
 
+const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"];
+
 export function formatDateShort(iso: string): { weekday: string; day: string; month: string } {
   const date = new Date(`${iso}T00:00:00Z`);
   const weekday = date.toLocaleDateString("en-US", { weekday: "short" });
   const day = date.toLocaleDateString("en-US", { day: "numeric" });
-  const month = date.toLocaleDateString("en-US", { month: "numeric" });
+  const month = MONTHS_SHORT[date.getUTCMonth()];
   return { weekday, day, month };
 }
 
@@ -109,17 +111,36 @@ export function getAvailabilityForDate(
   return slots;
 }
 
-function formatTime12h(time24: string): string {
+export function formatTime12h(time24: string): string {
   const [h, m] = time24.split(":").map(Number);
   const period = h >= 12 ? "PM" : "AM";
   const h12 = h % 12 === 0 ? 12 : h % 12;
   return `${h12}:${m.toString().padStart(2, "0")} ${period}`;
 }
 
+export function addHoursToTime(time24: string, hours: number): string {
+  const [h, m] = time24.split(":").map(Number);
+  const total = h + hours;
+  return `${total.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+}
+
 export type BookedKeySet = Set<string>;
 
 export function bookingKey(courtId: string, date: string, timeStart: string): string {
   return `${courtId}__${date}__${timeStart}`;
+}
+
+export function getBookingKeysForSpan(
+  courtId: string,
+  date: string,
+  timeStart: string,
+  durationHours: number
+): string[] {
+  const keys: string[] = [];
+  for (let i = 0; i < durationHours; i++) {
+    keys.push(bookingKey(courtId, date, addHoursToTime(timeStart, i)));
+  }
+  return keys;
 }
 
 export function generateReference(): string {
