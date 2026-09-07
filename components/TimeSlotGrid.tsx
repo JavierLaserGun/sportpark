@@ -14,9 +14,17 @@ interface Props {
 }
 
 export default function TimeSlotGrid({ courts, slots, selectedCourtId, selectedTimeStart, onSelect, cartItems = [] }: Props) {
-  // Helper function to check if a court+time is already in cart
+  // Helper function to check if a court+time falls inside any cart item's
+  // booked span (a cart item can now cover more than one hour once
+  // consecutive slots have been merged into a single order).
   const isInCart = (courtId: string, timeStart: string): boolean => {
-    return cartItems.some(item => item.courtId === courtId && item.time.start === timeStart);
+    const t = toMinutes(timeStart);
+    return cartItems.some((item) => {
+      if (item.courtId !== courtId) return false;
+      const start = toMinutes(item.time.start);
+      const end = toMinutes(item.time.end);
+      return t >= start && t < end;
+    });
   };
 
   // Get status for a slot, taking cart into account
@@ -110,6 +118,11 @@ export default function TimeSlotGrid({ courts, slots, selectedCourtId, selectedT
       </div>
     </div>
   );
+}
+
+function toMinutes(time24: string): number {
+  const [h, m] = time24.split(":").map(Number);
+  return h * 60 + m;
 }
 
 function Legend() {
