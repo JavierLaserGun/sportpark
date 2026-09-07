@@ -10,7 +10,12 @@ import {
   type ReactNode,
 } from "react";
 import type { Booking, CustomerInfo, Selection } from "./types";
-import { bookingKey, generateReference, type BookedKeySet } from "./mockData";
+import {
+  generateReference,
+  getBookingKeysForSpan,
+  formatTime12h,
+  type BookedKeySet,
+} from "./mockData";
 
 interface CustomerAccount {
   fullName: string;
@@ -65,6 +70,17 @@ function writeLS<T>(key: string, value: T | null) {
   }
 }
 
+function toMinutes(time24: string): number {
+  const [h, m] = time24.split(":").map(Number);
+  return h * 60 + m;
+}
+
+function fromMinutes(mins: number): string {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+}
+
 export function BookingProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const [selection, setSelectionState] = useState<Selection | null>(null);
@@ -87,9 +103,48 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     writeLS(LS_SELECTION, s);
   }, []);
 
+  // Adding a slot that is immediately before/after an existing cart item for
+  // the same sport + court + date merges them into a single order instead of
+  // creating a second line item.
   const addToCart = useCallback((s: Selection) => {
     setCartState((prev) => {
-      const next = [...prev, s];
+      const newStartMin = toMinutes(s.time.start);
+      const newEndMin = toMinutes(s.time.end);
+
+      const matchIndex = prev.findIndex((item) => {
+        if (item.sport !== s.sport || item.courtId !== s.courtId || item.date !== s.date) {
+          return false;
+        }
+        const itemStartMin = toMinutes(item.time.start);
+        const itemEndMin = toMinutes(item.time.end);
+        return itemEndMin === newStartMin || newEndMin === itemStartMin;
+      });
+
+      let next: Selection[];
+      if (matchIndex !== -1) {
+        const existing = prev[matchIndex];
+        const existingStartMin = toMinutes(existing.time.start);
+        const existingEndMin = toMinutes(existing.time.end);
+        const mergedStartMin = Math.min(existingStartMin, newStartMin);
+        const mergedEndMin = Math.max(existingEndMin, newEndMin);
+        const mergedStart = fromMinutes(mergedStartMin);
+        const mergedEnd = fromMinutes(mergedEndMin);
+
+        const merged: Selection = {
+          ...existing,
+          time: {
+            start: mergedStart,
+            end: mergedEnd,
+            label: `${formatTime12h(mergedStart)} - ${formatTime12h(mergedEnd)}`,
+          },
+          durationHours: existing.durationHours + s.durationHours,
+        };
+        next = [...prev];
+        next[matchIndex] = merged;
+      } else {
+        next = [...prev, s];
+      }
+
       writeLS(LS_CART, next);
       return next;
     });
@@ -117,7 +172,9 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     const set = new Set<string>();
     for (const b of bookings) {
       if (b.status !== "cancelled") {
-        set.add(bookingKey(b.courtId, b.date, b.time.start));
+        for (const key of getBookingKeysForSpan(b.courtId, b.date, b.time.start, b.durationHours)) {
+          set.add(key);
+        }
       }
     }
     return set;
@@ -126,9 +183,18 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   const confirmBooking = useCallback(
     (customer: CustomerInfo): Booking | null => {
       if (!selection) return null;
-      const key = bookingKey(selection.courtId, selection.date, selection.time.start);
+      const keys = getBookingKeysForSpan(
+        selection.courtId,
+        selection.date,
+        selection.time.start,
+        selection.durationHours
+      );
       const alreadyTaken = bookings.some(
-        (b) => b.status !== "cancelled" && bookingKey(b.courtId, b.date, b.time.start) === key
+        (b) =>
+          b.status !== "cancelled" &&
+          getBookingKeysForSpan(b.courtId, b.date, b.time.start, b.durationHours).some((k) =>
+            keys.includes(k)
+          )
       );
       if (alreadyTaken) return null;
 
@@ -161,9 +227,13 @@ export function BookingProvider({ children }: { children: ReactNode }) {
       const confirmed: Booking[] = [];
 
       for (const sel of cart) {
-        const key = bookingKey(sel.courtId, sel.date, sel.time.start);
+        const keys = getBookingKeysForSpan(sel.courtId, sel.date, sel.time.start, sel.durationHours);
         const alreadyTaken = bookings.some(
-          (b) => b.status !== "cancelled" && bookingKey(b.courtId, b.date, b.time.start) === key
+          (b) =>
+            b.status !== "cancelled" &&
+            getBookingKeysForSpan(b.courtId, b.date, b.time.start, b.durationHours).some((k) =>
+              keys.includes(k)
+            )
         );
         if (alreadyTaken) continue;
 
